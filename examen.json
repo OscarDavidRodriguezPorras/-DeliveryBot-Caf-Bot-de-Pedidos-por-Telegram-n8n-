@@ -277,6 +277,29 @@
                 ],
                 "combinator": "and"
               }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "b8c9d144-2de6-4b0a-8056-d60cb9a33741",
+                    "leftValue": "={{ $json.pantalla_actual }}",
+                    "rightValue": "PUNTOS",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
             }
           ]
         },
@@ -1743,8 +1766,8 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        1936,
-        272
+        2112,
+        240
       ],
       "id": "47e2a12f-5024-4cde-ac02-dd347ab8174e",
       "name": "Get row(s) in sheet6",
@@ -2248,7 +2271,7 @@
       "typeVersion": 2,
       "position": [
         1568,
-        736
+        768
       ],
       "id": "b37e8b3b-5802-40b0-b4cc-c80619cf7450",
       "name": "Code in JavaScript4"
@@ -2796,6 +2819,7 @@
       ],
       "id": "53799d3c-cf36-49c6-bc01-808dd9f65006",
       "name": "Get row(s) in sheet8",
+      "alwaysOutputData": true,
       "credentials": {
         "googleSheetsOAuth2Api": {
           "id": "oQYvWdgU83JsAQyY",
@@ -2805,13 +2829,13 @@
     },
     {
       "parameters": {
-        "jsCode": "// 1. Obtenemos los datos traídos de Google Sheets (Get row(s) in sheet8)\nconst datosUsuario = $('Get row(s) in sheet8').item.json;\n\n// 2. Leemos los puntos actuales (si está vacío o no existe, arranca en 0)\nconst puntosActuales = parseInt(datosUsuario.puntos_lealtad || 0, 10);\n\n// 3. Le sumamos 1 punto\nconst nuevosPuntos = puntosActuales + 1;\n\n// 4. Retornamos los datos actualizados\nreturn [{\n  json: {\n    ...datosUsuario, // Mantiene todos los datos del usuario (telegram_id, nombre, etc.)\n    puntos_lealtad: nuevosPuntos,\n    puntos_anteriores: puntosActuales,\n    mensaje: `¡Puntos actualizados! Tenías ${puntosActuales} y ahora tienes ${nuevosPuntos}.`\n  }\n}];"
+        "jsCode": "// 1. Obtenemos los datos del usuario (Get row(s) in sheet8)\nconst datosUsuario = $('Get row(s) in sheet8').first()?.json || {};\n\n// 2. Traemos explícitamente los datos del pedido desde Get row(s) in sheet10\nconst datosPedido = $('Get row(s) in sheet10').first()?.json || {};\n\n// 3. Extraemos el total del pago (busca total_pago o Pago_en_total)\nconst totalPago = parseFloat(datosPedido.total_pago || datosPedido.Pago_en_total || 0);\n\n// 4. Leemos los puntos acumulados que ya tenía el usuario\nconst puntosActuales = parseInt(datosUsuario.puntos_lealtad || 0, 10);\n\n// 5. Calculamos los puntos ganados (1 punto por cada 5 pesos)\nconst puntosGanados = Math.floor(totalPago / 5);\n\n// 6. Calculamos el nuevo total de puntos acumulados\nconst nuevosPuntos = puntosActuales + puntosGanados;\n\n// 7. Retornamos los datos actualizados\nreturn [{\n  json: {\n    ...datosUsuario,\n    puntos_ganados: puntosGanados,\n    puntos_anteriores: puntosActuales,\n    puntos_lealtad: nuevosPuntos,\n    mensaje: `¡Ganaste ${puntosGanados} puntos con tu compra de $${totalPago}! Tenías ${puntosActuales} y ahora tienes ${nuevosPuntos}.`\n  }\n}];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1104,
-        1616
+        2400,
+        1632
       ],
       "id": "b084ad22-41e5-4cee-a0d8-94ac87e62f4a",
       "name": "Code in JavaScript9"
@@ -2837,8 +2861,8 @@
           "mappingMode": "defineBelow",
           "value": {
             "departamento_oficina": "={{ $('Telegram Trigger').item.json.message.text }}",
-            "puntos_lealtad": "={{ $json.puntos_lealtad }}",
-            "telegram_id": "={{ $('Telegram Trigger').item.json.message.chat.id }}"
+            "telegram_id": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+            "puntos_lealtad": "={{ $json.puntos_lealtad }}"
           },
           "matchingColumns": [
             "telegram_id"
@@ -2880,7 +2904,8 @@
               "defaultMatch": false,
               "display": true,
               "type": "string",
-              "canBeUsedToMatch": true
+              "canBeUsedToMatch": true,
+              "removed": false
             },
             {
               "id": "fecha_registro",
@@ -2912,8 +2937,8 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        1312,
-        1616
+        2928,
+        1632
       ],
       "id": "abf6c1b6-36a1-453b-b470-b16be1777ca5",
       "name": "Update row in sheet10",
@@ -3061,8 +3086,8 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        1936,
-        1616
+        1520,
+        1632
       ],
       "id": "049b8660-e0c4-4249-b73a-4d98571ba6ef",
       "name": "Update row in sheet11",
@@ -3170,7 +3195,7 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        2144,
+        1728,
         1616
       ],
       "id": "a6b6daa4-63bf-4a1a-b0f3-3e27f2e52bb9",
@@ -3569,7 +3594,7 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1728,
+        1312,
         1616
       ],
       "id": "07ef41d0-e7ad-43c5-a1d5-e442f3675c6c",
@@ -3596,7 +3621,7 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        1520,
+        1104,
         1616
       ],
       "id": "578cd1f2-c99b-4678-bc6e-614dfd16d164",
@@ -3621,8 +3646,8 @@
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.3,
       "position": [
-        880,
-        2256
+        896,
+        2544
       ],
       "id": "88dc3f27-e991-4b0a-a60a-c85eb55a2925",
       "name": "Schedule Trigger"
@@ -3656,8 +3681,8 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        1072,
-        2256
+        1088,
+        2544
       ],
       "id": "1576c2fe-f663-4b0c-80cb-97aeb8660da2",
       "name": "Get row(s) in sheet11",
@@ -3675,8 +3700,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1280,
-        2256
+        1296,
+        2544
       ],
       "id": "879cf2a2-8dad-4414-aaa8-edd7b8785809",
       "name": "Code in JavaScript12"
@@ -3763,8 +3788,8 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        1488,
-        2256
+        1504,
+        2544
       ],
       "id": "7c31fd52-f2a0-46b0-b3c8-692340d7a068",
       "name": "Append row in sheet1",
@@ -3784,7 +3809,7 @@
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
-        2560,
+        2144,
         1616
       ],
       "id": "1f63a990-802c-49df-9179-f34ca299ef61",
@@ -3826,7 +3851,7 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        2352,
+        1936,
         1616
       ],
       "id": "ce5576cc-6608-432c-9210-890a875824ed",
@@ -3984,7 +4009,7 @@
     {
       "parameters": {
         "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
-        "text": "☕ ¡Bienvenido a DeliveryBot Café!\n\n¿Qué deseas hacer hoy? Selecciona una de las siguientes opciones:\n\n1️⃣ 🛒 Pedir\n2️⃣ 📜 Historial de pedidos\n\n👉 Escribe el número o el nombre de la opción que deseas seleccionar.",
+        "text": "☕ ¡Bienvenido a DeliveryBot Café!\n\n¿Qué deseas hacer hoy? Selecciona una de las siguientes opciones:\n\n1️⃣ 🛒 Pedir\n2️⃣ 📜 Historial de pedidos\n3️⃣  Ver Puntos\n\n👉 Escribe el número o el nombre de la opción que deseas seleccionar.",
         "additionalFields": {}
       },
       "type": "n8n-nodes-base.telegram",
@@ -4114,7 +4139,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// 1. Buscamos el texto directamente desde el evento de Telegram Trigger\n// (Ajusta 'Telegram Trigger' si en tu lienzo el nodo tiene otro nombre exacto)\nconst telegramData = $('Telegram Trigger').first()?.json;\n\n// 2. Extraemos el texto enviado por el usuario o de un callback/botón si fuera el caso\nconst textoRaw = telegramData?.message?.text \n  || telegramData?.callback_query?.data \n  || $input.first().json?.cantidad \n  || '';\n\n// 3. Limpiamos el texto y lo convertimos a string/minúsculas\nconst textoEntrada = String(textoRaw).trim().toLowerCase();\n\n// 4. Lista de opciones permitidas\nconst opcionesValidas = ['1', '2', 'pedir', 'historial de pedidos'];\n\n// 5. Validamos si está en la lista\nconst esOpcionValida = opcionesValidas.includes(textoEntrada) ? 1 : 0;\n\n// 6. Retornamos el resultado\nreturn [{\n  json: {\n    ...$input.first().json,\n    opcion_ingresada: textoRaw,\n    es_valido: esOpcionValida,\n    mensaje_error: esOpcionValida === 0 ? \"⚠️ Opción no válida. Por favor, selecciona '1' (Pedir), '2' (Historial de pedidos) o usa los botones del menú.\" : null\n  }\n}];"
+        "jsCode": "// 1. Buscamos el texto directamente desde el evento de Telegram Trigger\nconst telegramData = $('Telegram Trigger').first()?.json;\n\n// 2. Extraemos el texto enviado por el usuario o de un callback/botón si fuera el caso\nconst textoRaw = telegramData?.message?.text \n  || telegramData?.callback_query?.data \n  || $input.first().json?.cantidad \n  || '';\n\n// 3. Limpiamos el texto y lo convertimos a string/minúsculas\nconst textoEntrada = String(textoRaw).trim().toLowerCase();\n\n// 4. Lista de opciones permitidas (se agrega '3' y 'ver puntos')\nconst opcionesValidas = ['1', '2', '3', 'pedir', 'historial de pedidos', 'ver puntos'];\n\n// 5. Validamos si está en la lista\nconst esOpcionValida = opcionesValidas.includes(textoEntrada) ? 1 : 0;\n\n// 6. Retornamos el resultado\nreturn [{\n  json: {\n    ...$input.first().json,\n    opcion_ingresada: textoRaw,\n    es_valido: esOpcionValida,\n    mensaje_error: esOpcionValida === 0 ? \"⚠️ Opción no válida. Por favor, selecciona '1' (Pedir), '2' (Historial de pedidos), '3' (Ver puntos) o usa los botones del menú.\" : null\n  }\n}];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -4182,7 +4207,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// 1. Obtenemos el ítem recibido de la entrada\nconst item = $input.first().json;\n\n// 2. Extraemos 'opcion_ingresada' y la convertimos a minúsculas y sin espacios\nconst opcion = String(item.opcion_ingresada || '').trim().toLowerCase();\n\n// 3. Evaluamos la ruta según lo ingresado:\n// Si es '2' o 'historial de pedidos' -> 1\n// Si es '1' o 'pedir' -> 0\nlet ruta = 0;\n\nif (opcion === '2' || opcion === 'historial de pedidos') {\n  ruta = 1;\n} else if (opcion === '1' || opcion === 'pedir') {\n  ruta = 0;\n}\n\n// 4. Retornamos el objeto con el campo 'ruta' (0 o 1)\nreturn [{\n  json: {\n    ...item,\n    ruta: ruta\n  }\n}];"
+        "jsCode": "// 1. Obtenemos el ítem recibido de la entrada\nconst item = $input.first().json;\n\n// 2. Extraemos 'opcion_ingresada' y la convertimos a minúsculas y sin espacios\nconst opcion = String(item.opcion_ingresada || '').trim().toLowerCase();\n\n// 3. Evaluamos la ruta según lo ingresado:\n// Si es '1' o 'pedir' -> 1\n// Si es '2' o 'historial de pedidos' -> 2\n// Si es '3' o 'ver puntos' -> 3\nlet ruta = null;\n\nif (opcion === '1' || opcion === 'pedir') {\n  ruta = 1;\n} else if (opcion === '2' || opcion === 'historial de pedidos') {\n  ruta = 2;\n} else if (opcion === '3' || opcion === 'ver puntos') {\n  ruta = 3;\n}\n\n// 4. Retornamos el objeto con el campo 'ruta' (1, 2 o 3)\nreturn [{\n  json: {\n    ...item,\n    ruta: ruta\n  }\n}];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -4192,39 +4217,6 @@
       ],
       "id": "268dbeb3-40cc-47c7-87f7-51e38873a99c",
       "name": "Code in JavaScript17"
-    },
-    {
-      "parameters": {
-        "conditions": {
-          "options": {
-            "caseSensitive": true,
-            "leftValue": "",
-            "typeValidation": "strict",
-            "version": 3
-          },
-          "conditions": [
-            {
-              "id": "3ed73ea5-0542-4980-bee4-57c5a0ebbcfa",
-              "leftValue": "={{ $json.ruta }}",
-              "rightValue": 0,
-              "operator": {
-                "type": "number",
-                "operation": "equals"
-              }
-            }
-          ],
-          "combinator": "and"
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 2.3,
-      "position": [
-        1872,
-        -512
-      ],
-      "id": "34e67547-1728-4d5a-8e6b-d680a791a8f7",
-      "name": "If10"
     },
     {
       "parameters": {
@@ -4872,6 +4864,583 @@
           "name": "Google Sheets account"
         }
       }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "968d6416-5d50-4043-a057-cba877936431",
+              "name": "puntos_lealtad",
+              "value": "={{ $json.puntos_lealtad }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2640,
+        1648
+      ],
+      "id": "a24c0fdb-38af-4316-909c-7b340cc1a89c",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.ruta }}",
+                    "rightValue": 1,
+                    "operator": {
+                      "type": "number",
+                      "operation": "equals"
+                    },
+                    "id": "17f5769b-060c-4445-9d65-f61c826da025"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "27215139-1b3e-4b0f-bdeb-976c8b1e1696",
+                    "leftValue": "={{ $json.ruta }}",
+                    "rightValue": 2,
+                    "operator": {
+                      "type": "number",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "a5c4d2df-6f53-4c41-a243-50af6b6a86ad",
+                    "leftValue": "={{ $json.ruta }}",
+                    "rightValue": 3,
+                    "operator": {
+                      "type": "number",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        1872,
+        -512
+      ],
+      "id": "73c6f7fd-53f5-4b6a-9bcd-723ce9d4d575",
+      "name": "Switch1"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "=\"✨ ¡Genial! Estás a un paso de consultar tus puntos. 🌟\n\nEscribe cualquier mensaje o envía un . (punto) para continuar y ver tu saldo actual.\"",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        2128,
+        -352
+      ],
+      "id": "38da3602-ae37-4e52-9d9c-886ad0d97779",
+      "name": "Send a text message25",
+      "webhookId": "24037d45-a75b-40b8-953a-e3ba825614e2",
+      "credentials": {
+        "telegramApi": {
+          "id": "AS4yrcX4huD9E6Ur",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "180qIOv2gC1xbkCoBhJi58siSt873PvW0O00wAO-pk5A",
+          "mode": "list",
+          "cachedResultName": "DeliveryBot_DB",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/180qIOv2gC1xbkCoBhJi58siSt873PvW0O00wAO-pk5A/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 296877210,
+          "mode": "list",
+          "cachedResultName": "SESSIONS",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/180qIOv2gC1xbkCoBhJi58siSt873PvW0O00wAO-pk5A/edit#gid=296877210"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "telegram_id": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+            "pantalla_actual": "PUNTOS"
+          },
+          "matchingColumns": [
+            "telegram_id"
+          ],
+          "schema": [
+            {
+              "id": "telegram_id",
+              "displayName": "telegram_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "pantalla_actual",
+              "displayName": "pantalla_actual",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "carrito_temporal",
+              "displayName": "carrito_temporal",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ultimo_cambio",
+              "displayName": "ultimo_cambio",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "cantidad",
+              "displayName": "cantidad",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2336,
+        -352
+      ],
+      "id": "5d30c8e4-9499-4dff-9d80-a40343107b7c",
+      "name": "Update row in sheet20",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "oQYvWdgU83JsAQyY",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "180qIOv2gC1xbkCoBhJi58siSt873PvW0O00wAO-pk5A",
+          "mode": "list",
+          "cachedResultName": "DeliveryBot_DB",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/180qIOv2gC1xbkCoBhJi58siSt873PvW0O00wAO-pk5A/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1757500419,
+          "mode": "list",
+          "cachedResultName": "USUARIOS",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/180qIOv2gC1xbkCoBhJi58siSt873PvW0O00wAO-pk5A/edit#gid=1757500419"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        864,
+        2208
+      ],
+      "id": "aa33e60e-11c2-4ad3-8c44-ae8299b5b74a",
+      "name": "Get row(s) in sheet13",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "oQYvWdgU83JsAQyY",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. Obtenemos los resultados traídos por la búsqueda en Sheets\nconst sheetItems = $('Get row(s) in sheet13').all();\n\n// 2. Extraemos la información del primer ítem si existe\nconst sheetData = sheetItems.length > 0 ? sheetItems[0].json : null;\n\n// 3. Tomamos los datos que llegan de la entrada del flujo actual\nconst inputJson = $input.first()?.json || {};\n\n// 4. Validamos si realmente encontró un usuario con datos válidos\nconst existeUsuario = Boolean(\n  sheetData && \n  Object.keys(sheetData).length > 0 && \n  (sheetData.telegram_id || sheetData.puntos_lealtad !== undefined)\n);\n\n// 5. Asignamos 1 o 0\nconst usuarioExiste = existeUsuario ? 1 : 0;\nconst puntosActuales = existeUsuario ? (sheetData.puntos_lealtad || 0) : 0;\n\n// 6. Retornamos el resultado\nreturn [{\n  json: {\n    ...inputJson,\n    ...(existeUsuario ? sheetData : {}),\n    usuario_existe: usuarioExiste,\n    puntos_lealtad: puntosActuales\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1072,
+        2208
+      ],
+      "id": "25e2ce78-4ccb-46d4-97b3-22280485dbd9",
+      "name": "Code in JavaScript20"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "16618022-534e-463a-89fc-9ab07c17d61b",
+              "leftValue": "={{ $json.usuario_existe }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1280,
+        2208
+      ],
+      "id": "1364e34b-d878-47c1-b9e9-bf5c0f6a06b8",
+      "name": "If10"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "Aquí tienes un mensaje claro y amigable para mostrar cuando el usuario no tenga registros en la base de datos de puntos:\n\n> ⚠️ **¡Ups! Aún no tienes puntos acumulados.**\n> Parece que todavía no has realizado ningún pedido con nosotros, por lo que tu saldo actual de puntos de lealtad es **0**. ¡Realiza tu primer pedido para empezar a ganar recompensas! 🍔🍟\n> 🔄 *Redireccionando al menú principal...*\n> 📩 **Envía cualquier mensaje en el chat para continuar.**",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1488,
+        2112
+      ],
+      "id": "eebe12c2-66ed-4333-84ff-fd2102c347f7",
+      "name": "Send a text message26",
+      "webhookId": "d992ff7e-9585-4f87-99f4-0250a480e9d8",
+      "credentials": {
+        "telegramApi": {
+          "id": "j66p4gS0gTLkWrI0",
+          "name": "Telegram account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "180qIOv2gC1xbkCoBhJi58siSt873PvW0O00wAO-pk5A",
+          "mode": "list",
+          "cachedResultName": "DeliveryBot_DB",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/180qIOv2gC1xbkCoBhJi58siSt873PvW0O00wAO-pk5A/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 296877210,
+          "mode": "list",
+          "cachedResultName": "SESSIONS",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/180qIOv2gC1xbkCoBhJi58siSt873PvW0O00wAO-pk5A/edit#gid=296877210"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "telegram_id": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+            "pantalla_actual": "={{ '' }}"
+          },
+          "matchingColumns": [
+            "telegram_id"
+          ],
+          "schema": [
+            {
+              "id": "telegram_id",
+              "displayName": "telegram_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "pantalla_actual",
+              "displayName": "pantalla_actual",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "carrito_temporal",
+              "displayName": "carrito_temporal",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ultimo_cambio",
+              "displayName": "ultimo_cambio",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "cantidad",
+              "displayName": "cantidad",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1696,
+        2112
+      ],
+      "id": "a15a8634-5044-49a7-b059-4f465b694694",
+      "name": "Update row in sheet21",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "oQYvWdgU83JsAQyY",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "=✨ ¡Hola,{{ $('Telegram Trigger').item.json.message.chat.first_name }} ! ✨\n\n🏆 Tus puntos acumulados: {{ $('Get row(s) in sheet13').item.json.puntos_lealtad }} pts\n\n🎁 ¡Cada pedido te acerca a grandes recompensas! Sigue acumulando y canjea tus premios favoritos.\n\n🔄 Envía cualquier mensaje para volver al menú principal. ",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1488,
+        2304
+      ],
+      "id": "2e0196c8-41b9-4c83-9976-81d4122e60fb",
+      "name": "Send a text message27",
+      "webhookId": "7110e460-e4ad-440d-b44e-d26b65bfad04",
+      "credentials": {
+        "telegramApi": {
+          "id": "AS4yrcX4huD9E6Ur",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "180qIOv2gC1xbkCoBhJi58siSt873PvW0O00wAO-pk5A",
+          "mode": "list",
+          "cachedResultName": "DeliveryBot_DB",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/180qIOv2gC1xbkCoBhJi58siSt873PvW0O00wAO-pk5A/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 296877210,
+          "mode": "list",
+          "cachedResultName": "SESSIONS",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/180qIOv2gC1xbkCoBhJi58siSt873PvW0O00wAO-pk5A/edit#gid=296877210"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "telegram_id": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+            "pantalla_actual": "={{ '' }}"
+          },
+          "matchingColumns": [
+            "telegram_id"
+          ],
+          "schema": [
+            {
+              "id": "telegram_id",
+              "displayName": "telegram_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "pantalla_actual",
+              "displayName": "pantalla_actual",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "carrito_temporal",
+              "displayName": "carrito_temporal",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ultimo_cambio",
+              "displayName": "ultimo_cambio",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "cantidad",
+              "displayName": "cantidad",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1696,
+        2304
+      ],
+      "id": "c1e26762-4a05-42cd-ba98-88a811f0de69",
+      "name": "Update row in sheet22",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "oQYvWdgU83JsAQyY",
+          "name": "Google Sheets account"
+        }
+      }
     }
   ],
   "pinData": {},
@@ -4984,6 +5553,13 @@
         [
           {
             "node": "Get row(s) in sheet12",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get row(s) in sheet13",
             "type": "main",
             "index": 0
           }
@@ -5431,7 +6007,7 @@
       "main": [
         [
           {
-            "node": "Code in JavaScript9",
+            "node": "Get row(s) in sheet10",
             "type": "main",
             "index": 0
           }
@@ -5442,7 +6018,7 @@
       "main": [
         [
           {
-            "node": "Update row in sheet10",
+            "node": "Edit Fields",
             "type": "main",
             "index": 0
           }
@@ -5451,13 +6027,7 @@
     },
     "Update row in sheet10": {
       "main": [
-        [
-          {
-            "node": "Get row(s) in sheet10",
-            "type": "main",
-            "index": 0
-          }
-        ]
+        []
       ]
     },
     "Update row in sheet11": {
@@ -5734,25 +6304,7 @@
       "main": [
         [
           {
-            "node": "If10",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "If10": {
-      "main": [
-        [
-          {
-            "node": "Send a text message20",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Send a text message21",
+            "node": "Switch1",
             "type": "main",
             "index": 0
           }
@@ -5864,6 +6416,126 @@
           }
         ]
       ]
+    },
+    "Send a text message14": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript9",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Update row in sheet10",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch1": {
+      "main": [
+        [
+          {
+            "node": "Send a text message20",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a text message21",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a text message25",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a text message25": {
+      "main": [
+        [
+          {
+            "node": "Update row in sheet20",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet13": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript20",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript20": {
+      "main": [
+        [
+          {
+            "node": "If10",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If10": {
+      "main": [
+        [
+          {
+            "node": "Send a text message26",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a text message27",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a text message26": {
+      "main": [
+        [
+          {
+            "node": "Update row in sheet21",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a text message27": {
+      "main": [
+        [
+          {
+            "node": "Update row in sheet22",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": false,
@@ -5872,7 +6544,7 @@
     "binaryMode": "separate",
     "availableInMCP": false
   },
-  "versionId": "5a800eb5-1747-4abf-9b54-0899fe90f1c4",
+  "versionId": "ebaea803-369a-4bbd-a16d-235eb3b0eb55",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "6ed10fbb90ec4da59fe7daacc0b39365d9ce7239ec4a5edc041cf8d0c8e32c5b"

@@ -366,6 +366,33 @@ En todos los casos, el bot **no avanza de pantalla** hasta que el usuario respon
 
 ---
 
+# Update: Examen [Número]
+
+## Descripción
+
+En esta actualización se implementó la lógica necesaria para el examen, incorporando nuevos nodos en el flujo de n8n que permiten automatizar el proceso solicitado. La solución incluye la recepción y procesamiento de mensajes desde Telegram, la ejecución de la lógica correspondiente y, cuando aplica, el registro automático de la información en Google Sheets.
+
+## Cambios implementados
+
+- Se añadieron nuevos nodos al workflow de n8n para soportar la funcionalidad del examen.
+- Se configuró la comunicación con Telegram para validar el funcionamiento del flujo.
+- Se registran los datos en Google Sheets cuando el proceso requiere almacenar información.
+- Se verificó el funcionamiento completo mediante pruebas exitosas.
+
+## Evidencias
+
+### Nuevos nodos en n8n
+
+![Nodos nuevos](/node%20edit%20fields.png)
+
+### Prueba exitosa en Telegram
+
+![Prueba en Telegram](/puntos%20telegram.png)
+
+### Evidencia en Google Sheets
+
+![Google Sheets](/puntos%20sheets.png)
+
 ## 📂 Créditos técnicos
 
 - **Plataforma de automatización:** [n8n](https://n8n.io)
